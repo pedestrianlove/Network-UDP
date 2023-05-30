@@ -79,7 +79,7 @@ class RDTUtility:
         print("Client: Client starting at...", str(self.client_addr))
 
         print("Client: Sending the following image:")
-        renderImage("test.jpg")
+        self.renderImage("test.jpg")
 
         counter = 0
         testFile = open('test.jpg', 'rb')
