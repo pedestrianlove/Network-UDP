@@ -66,7 +66,7 @@ class RDTUtility:
                 return data
             else: # resend ack
                 print ("RDT: Incorrect SEQ received, continuing...")
-                self.send_ack(socket, self.sequence_number)
+                self.send_ack(socket, self.sequence_number-1)
                 continue
 
     def start_server(self):
@@ -89,7 +89,7 @@ class RDTUtility:
 
     def start_client(self):
         print("Client: Client starting at...", str(self.client_addr))
-
+        self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image:")
         self.renderImage("test.jpg")
 
@@ -102,6 +102,7 @@ class RDTUtility:
             counter += 1
             buf = testFile.read(1024)
 
+        print("Client: File sent.")
         print("Client: Sending stop signal...")
         self.rdt_send(self.client_socket, "stop".encode())
 
