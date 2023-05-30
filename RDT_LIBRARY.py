@@ -45,38 +45,39 @@ class RDTUtility:
     # Userspace methods
     def rdt_send(self, socket, data):
         packet = self.packet(self.sequence_number, data)
-        while True:
+        while (True):
             print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
             self.send_packet(socket, packet)
             try:
                 socket.settimeout(self.timeout)
                 ack_packet = self.receive_packet(socket)
                 seq, _ = self.dec_packet(ack_packet)
-                if self.is_expected_seq(seq):
-                    print("RDT: Correct SEQ received, goes on sending another one...")
+                if (self.is_expected_seq(seq)):
+                    print("RDT: Correct ACK SEQ received, goes on sending another one...")
                     self.sequence_number += 1
                     break
                 else:
-                    print("RDT: Incorrect ACK SEQ received, sending another one...")
+                    print("RDT: Incorrect ACK SEQ received,", seq, ", sending another one...")
                     continue
             except TimeoutError:
                 print("RDT: Timeout occurred, resending the packet...")
                 continue
 
     def rdt_receive(self, socket):
-        while True:
+        while (True):
             print("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
             try:
                 socket.settimeout(self.timeout)
                 packet = self.receive_packet(socket)
                 seq, data = self.dec_packet(packet)
-                if self.is_expected_seq(seq):
-                    print("RDT: Correct SEQ received, saving...")
+                if (self.is_expected_seq(seq)):
+                    print("RDT: Correct SEQ received,", seq, ", saving...")
                     self.send_ack(socket, seq)
                     self.sequence_number += 1
                     return data
                 else:
-                    print("RDT: Incorrect SEQ received, continuing...")
+                    print("RDT: Incorrect SEQ received,", seq, ", continuing...")
+                    self.send_ack(socket, self.sequence_number - 1)
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
