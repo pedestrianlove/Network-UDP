@@ -49,7 +49,7 @@ class RDTUtility:
             print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
             self.send_packet(self.server_socket, packet)
             try:
-                socket.settimeout(self.timeout)
+                self.client_socket.settimeout(self.timeout)
                 ack_packet = self.receive_packet(self.client_socket)
                 seq, _ = self.dec_packet(ack_packet)
                 if (self.is_expected_seq(seq)):
