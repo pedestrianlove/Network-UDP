@@ -42,30 +42,30 @@ class RDTUtility:
     def rdt_send(self, socket, data):
         packet = self.packet(self.sequence_number, data)
         while True:
-            print ("Sending the packet with SEQ=", self.sequence_number, "...")
+            print ("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
             self.send_packet(socket, packet)
             ack_packet = self.receive_packet(socket)
             seq, _ = self.dec_packet(ack_packet)
             if self.is_expected_seq(seq):
-                print ("Correct SEQ received, goes on sending another one...")
+                print ("RDT: Correct SEQ received, goes on sending another one...")
                 self.sequence_number += 1
                 break
             else:
-                print ("Incorrect SEQ received, sending another one...")
+                print ("RDT: Incorrect SEQ received, sending another one...")
                 continue
 
     def rdt_receive(self, socket):
         while True:
-            print ("Receiving the packet with SEQ=", self.sequence_number, "...")
+            print ("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
             packet = self.receive_packet(socket)
             seq, data = self.dec_packet(packet)
             if self.is_expected_seq(seq):
-                print ("Correct SEQ received, saving...")
+                print ("RDT: Correct SEQ received, saving...")
                 self.send_ack(socket, seq)
                 self.sequence_number += 1
                 return data
             else: # resend ack
-                print ("Incorrect SEQ received, continuing...")
+                print ("RDT: Incorrect SEQ received, continuing...")
                 self.send_ack(socket, self.sequence_number)
                 continue
 
