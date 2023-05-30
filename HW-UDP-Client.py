@@ -6,6 +6,4 @@ client_addr = ('172.23.8.60', 8001)
 client = RDTUtility(client_addr, server_addr)
 
 # run client
-client.run_client()
-
-
+client.start_client()
