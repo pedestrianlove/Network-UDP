@@ -77,7 +77,7 @@ class RDTUtility:
                     return data
                 else:
                     print("RDT: Incorrect SEQ received, continuing...")
-            except socket.timeout:
+            except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
 
