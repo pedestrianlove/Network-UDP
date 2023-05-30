@@ -89,9 +89,12 @@ class RDTUtility:
         outputFile = open('received.jpg', 'wb')
         while True:
             data = self.rdt_receive(self.server_socket)
-            if data.decode() == "stop":
-                break
-            outputFile.write(data)
+            try:
+                if data.decode() == "stop":
+                    break
+                outputFile.write(data)
+            except UnicodeDecodeError:
+                outputFile.write(data)
         print("Server: File closed.")
         outputFile.close()
 
