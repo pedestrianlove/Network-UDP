@@ -1,6 +1,7 @@
 import socket
 import pickle
 import cv2
+import matplotlib.pyplot as plt
 
 class RDTUtility:
     def __init__(self, server_addr, client_addr):
