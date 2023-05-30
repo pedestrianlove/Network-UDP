@@ -57,8 +57,9 @@ class RDTUtility:
                     self.sequence_number += 1
                     break
                 else:
-                    print("RDT: Incorrect SEQ received, sending another one...")
-            except socket.timeout:
+                    print("RDT: Incorrect ACK SEQ received, sending another one...")
+                    continue
+            except TimeoutError:
                 print("RDT: Timeout occurred, resending the packet...")
                 continue
 
