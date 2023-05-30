@@ -72,12 +72,12 @@ class RDTUtility:
                 seq, data = self.dec_packet(packet)
                 if (self.is_expected_seq(seq)):
                     print("RDT: Correct SEQ received,", seq, ", saving...")
-                    self.send_ack(socket, seq)
                     self.sequence_number += 1
+                    self.send_ack(socket, self.sequence_number - 1)
                     return data
                 else:
                     print("RDT: Incorrect SEQ received,", seq, ", resending the last ack...")
-                    self.send_ack(socket, seq - 1)
+                    self.send_ack(socket, self.sequence_number - 1)
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
