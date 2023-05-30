@@ -9,7 +9,11 @@ class RDTUtility:
         self.client_addr = client_addr
         self.server_socket = self.create_socket()
         self.client_socket = self.create_socket()
+        self.client_socket.bind(self.client_addr)
+        self.server_socket.bind(self.server_addr)
         self.sequence_number = 0
+        self.timeout = 5  # Set timeout value in seconds
+
 
     # Utility method
     def create_socket(self):
@@ -44,36 +48,42 @@ class RDTUtility:
     def rdt_send(self, socket, data):
         packet = self.packet(self.sequence_number, data)
         while True:
-            print ("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
+            print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
             self.send_packet(socket, packet)
-            ack_packet = self.receive_packet(socket)
-            seq, _ = self.dec_packet(ack_packet)
-            if self.is_expected_seq(seq):
-                print ("RDT: Correct SEQ received, goes on sending another one...")
-                self.sequence_number += 1
-                break
-            else:
-                print ("RDT: Incorrect SEQ received, sending another one...")
+            try:
+                socket.settimeout(self.timeout)
+                ack_packet = self.receive_packet(socket)
+                seq, _ = self.dec_packet(ack_packet)
+                if self.is_expected_seq(seq):
+                    print("RDT: Correct SEQ received, goes on sending another one...")
+                    self.sequence_number += 1
+                    break
+                else:
+                    print("RDT: Incorrect SEQ received, sending another one...")
+            except socket.timeout:
+                print("RDT: Timeout occurred, resending the packet...")
                 continue
 
     def rdt_receive(self, socket):
         while True:
-            print ("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
-            packet = self.receive_packet(socket)
-            seq, data = self.dec_packet(packet)
-            if self.is_expected_seq(seq):
-                print ("RDT: Correct SEQ received, saving...")
-                self.send_ack(socket, seq)
-                self.sequence_number += 1
-                return data
-            else: # resend ack
-                print ("RDT: Incorrect SEQ received, continuing...")
-                self.send_ack(socket, self.sequence_number-1)
+            print("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
+            try:
+                socket.settimeout(self.timeout)
+                packet = self.receive_packet(socket)
+                seq, data = self.dec_packet(packet)
+                if self.is_expected_seq(seq):
+                    print("RDT: Correct SEQ received, saving...")
+                    self.send_ack(socket, seq)
+                    self.sequence_number += 1
+                    return data
+                else:
+                    print("RDT: Incorrect SEQ received, continuing...")
+            except socket.timeout:
+                print("RDT: Timeout occurred, waiting for the packet...")
                 continue
 
     def start_server(self):
         print("Server: Server starting...")
-        self.server_socket.bind(self.server_addr)
         print("Server: Listening at: ", str(self.server_addr))
         print("Server: Waiting for data...")
 
@@ -91,17 +101,14 @@ class RDTUtility:
 
     def start_client(self):
         print("Client: Client starting at...", str(self.client_addr))
-        self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image:")
         self.renderImage("test.jpg")
 
-        counter = 0
         testFile = open('test.jpg', 'rb')
         buf = testFile.read(1024)
         while buf:
-            print("Client: Sending packet with SEQ...", counter)
-            self.rdt_send(self.client_socket, buf)
-            counter += 1
+            print("Client: Sending packet with SEQ...", self.sequence_number)
+            self.rdt_send(self.server_socket, buf)
             buf = testFile.read(1024)
 
         print("Client: File sent.")
