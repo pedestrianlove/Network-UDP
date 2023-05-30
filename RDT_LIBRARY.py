@@ -63,16 +63,17 @@ class RDTUtility:
                 print("RDT: Timeout occurred, resending the packet...")
                 continue
 
-    def rdt_receive(self, socket):
+    def rdt_receive(self):
         while (True):
             print("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
             try:
-                socket.settimeout(self.timeout)
-                packet = self.receive_packet(socket)
+                self.server_socket.settimeout(self.timeout)
+                packet = self.receive_packet(self.server_socket)
                 seq, data = self.dec_packet(packet)
                 if (self.is_expected_seq(seq)):
                     print("RDT: Correct SEQ received,", seq, ", saving...")
                     self.sequence_number += 1
+                    print("RDT: Sending ACK with SEQ=", seq, ", to the client...")
                     self.send_ack(self.client_socket, self.sequence_number - 1)
                     return data
                 else:
@@ -90,7 +91,7 @@ class RDTUtility:
 
         outputFile = open('received.jpg', 'wb')
         while True:
-            data = self.rdt_receive(self.server_socket)
+            data = self.rdt_receive()
             try:
                 if data.decode() == "stop":
                     break
@@ -113,7 +114,7 @@ class RDTUtility:
         buf = testFile.read(1024)
         while buf:
             print("Client: Sending packet with SEQ...", self.sequence_number)
-            self.rdt_send(self.server_socket, buf)
+            self.rdt_send(buf)
             buf = testFile.read(1024)
 
         print("Client: File sent.")
