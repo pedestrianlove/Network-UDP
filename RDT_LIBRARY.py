@@ -9,8 +9,6 @@ class RDTUtility:
         self.client_addr = client_addr
         self.server_socket = self.create_socket()
         self.client_socket = self.create_socket()
-        self.client_socket.bind(self.client_addr)
-        self.server_socket.bind(self.server_addr)
         self.sequence_number = 0
         self.timeout = 5  # Set timeout value in seconds
 
@@ -84,6 +82,7 @@ class RDTUtility:
 
     def start_server(self):
         print("Server: Server starting...")
+        self.server_socket.bind(self.server_addr)
         print("Server: Listening at: ", str(self.server_addr))
         print("Server: Waiting for data...")
 
@@ -101,6 +100,7 @@ class RDTUtility:
 
     def start_client(self):
         print("Client: Client starting at...", str(self.client_addr))
+        self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image:")
         self.renderImage("test.jpg")
 
