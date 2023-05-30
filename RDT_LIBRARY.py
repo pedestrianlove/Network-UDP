@@ -57,6 +57,9 @@ class RDTUtility:
                 self.send_ack(socket, seq)
                 self.sequence_number += 1
                 return data
+            else: # resend ack
+                self.send_ack(socket, self.sequence_number)
+                continue
 
     def start_server(self):
         print("Server: Server starting...")
