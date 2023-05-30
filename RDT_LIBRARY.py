@@ -43,11 +43,11 @@ class RDTUtility:
         return seq == self.sequence_number
 
     # Userspace methods
-    def rdt_send(self, socket, data):
+    def rdt_send(self, data):
         packet = self.packet(self.sequence_number, data)
         while (True):
             print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
-            self.send_packet(socket, packet)
+            self.send_packet(self.server_socket, packet)
             try:
                 socket.settimeout(self.timeout)
                 ack_packet = self.receive_packet(self.client_socket)
