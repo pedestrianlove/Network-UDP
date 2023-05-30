@@ -11,6 +11,7 @@ class RDTUtility:
         self.client_socket = self.create_socket()
         self.sequence_number = 0
 
+    # Utility method
     def create_socket(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -39,6 +40,7 @@ class RDTUtility:
     def is_expected_seq(self, seq):
         return seq == self.sequence_number
 
+    # Userspace methods
     def rdt_send(self, socket, data):
         packet = self.packet(self.sequence_number, data)
         while True:
