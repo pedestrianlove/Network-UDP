@@ -51,8 +51,8 @@ class RDTUtility:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = self.receive_packet(self.client_socket)
-                seq, _ = self.dec_packet(ack_packet)
-                if (self.is_expected_seq(seq)):
+                seq, data = self.dec_packet(ack_packet)
+                if (self.is_expected_seq(seq) and data.decode() == "ACK"):
                     print("RDT: Correct ACK SEQ received, goes on sending another one...")
                     self.sequence_number += 1
                     break
