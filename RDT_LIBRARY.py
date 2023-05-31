@@ -29,15 +29,15 @@ class RDTUtility:
         seq, binary_data = packet
         return seq, binary_data
 
-    def send_packet(self, socket, packet):
-        socket.sendto(packet, self.server_addr)
+    def send_packet(self, addr, packet):
+        socket.sendto(packet, addr)
 
     def receive_packet(self, socket):
         return socket.recvfrom(1024 * 2)[0]
 
-    def send_ack(self, socket, seq):
+    def send_ack(self, addr, seq):
         ack_packet = self.packet(seq, "ACK".encode())
-        self.send_packet(socket, ack_packet)
+        self.client_socket.sendto(ack_packet, addr)
 
     def is_expected_seq(self, seq):
         return seq == self.sequence_number
@@ -47,7 +47,7 @@ class RDTUtility:
         packet = self.packet(self.sequence_number, data)
         while (True):
             print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
-            self.send_packet(self.server_socket, packet)
+            self.client_socket.sendto(packet, self.server_addr)
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = self.receive_packet(self.client_socket)
@@ -78,6 +78,7 @@ class RDTUtility:
                     return data
                 else:
                     print("RDT: Incorrect SEQ received,", seq, ", resending the last ack...")
+                    break
                     self.send_ack(self.client_socket, seq - 1)
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
