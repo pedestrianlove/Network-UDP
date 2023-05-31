@@ -120,7 +120,7 @@ class RDTUtility:
 
         print("Client: File sent.")
         print("Client: Sending stop signal...")
-        self.rdt_send(self.client_socket, "stop".encode())
+        self.rdt_send("stop".encode())
 
         testFile.close()
         print("Client stopped.")
