@@ -6,12 +6,12 @@ class Packet:
     seq = None
     binary_data = None
 
-    def __init__(self, seq, data):
-        self.seq = seq
-        self.binary_data = data
+    def __init__(self, seq_input, data_input):
+        self.seq = seq_input
+        self.binary_data = data_input
 
     def __str__(self):
-        return "Packet: SEQ=" + str(self.seq) + ", DATA=" + str(self.binary_data)
+        return "Packet: SEQ=" + str(self.seq) + ", DATA=" + str(self.binary_data.decode())
 
     # Utility Methods
     @classmethod
