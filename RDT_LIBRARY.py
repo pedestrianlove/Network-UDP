@@ -11,7 +11,7 @@ class Packet:
         self.binary_data = data_input
 
     def __str__(self):
-        return "Packet: SEQ=" + str(self.seq) + ", DATA=" + self.binary_data
+        return "Packet: SEQ=" + str(self.seq) + ", DATA=" + str(self.binary_data)
 
     # Utility Methods
     @classmethod
