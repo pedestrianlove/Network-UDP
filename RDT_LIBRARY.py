@@ -3,6 +3,9 @@ import pickle
 
 
 class Packet:
+    seq = None
+    binary_data = None
+
     def __init__(self, seq_input, data_input):
         self.seq = seq_input
         self.binary_data = data_input
@@ -11,9 +14,8 @@ class Packet:
         return "Packet: SEQ=" + str(self.seq) + ", DATA=" + str(self.binary_data)
 
     # Utility Methods
-    @classmethod
-    def encode(cls):
-        packet = (cls.seq, cls.binary_data)
+    def encode(self):
+        packet = (self.seq, self.binary_data)
         packet_bytes = pickle.dumps(packet)
         return packet_bytes
 
@@ -24,9 +26,8 @@ class Packet:
         return Packet(seq, binary_data)
 
     # Userspace methods
-    @classmethod
-    def send(cls, assigned_socket, addr):
-        packet = cls.encode()
+    def send(self, assigned_socket, addr):
+        packet = self.encode()
         assigned_socket.sendto(packet, addr)
 
     @staticmethod
