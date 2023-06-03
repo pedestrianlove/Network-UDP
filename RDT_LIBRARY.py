@@ -3,9 +3,6 @@ import pickle
 
 
 class Packet:
-    seq = None
-    binary_data = None
-
     def __init__(self, seq_input, data_input):
         self.seq = seq_input
         self.binary_data = data_input
