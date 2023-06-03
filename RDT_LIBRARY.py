@@ -2,6 +2,42 @@ import socket
 import pickle
 
 
+class Packet:
+    seq = None
+    binary_data = None
+
+    def __init__(self, seq, data):
+        self.seq = seq
+        self.binary_data = data
+
+    def __str__(self):
+        return "Packet: SEQ=" + str(self.seq) + ", DATA=" + str(self.binary_data)
+
+    # Utility Methods
+    @classmethod
+    def encode(cls):
+        packet = (cls.seq, cls.binary_data)
+        packet_bytes = pickle.dumps(packet)
+        return packet_bytes
+
+    @staticmethod
+    def decode(binary_packet):
+        packet = pickle.loads(binary_packet)
+        seq, binary_data = packet
+        return Packet(seq, binary_data)
+
+    # Userspace methods
+    @classmethod
+    def send(cls, assigned_socket, addr):
+        packet = cls.encode()
+        assigned_socket.sendto(packet, addr)
+
+    @staticmethod
+    def receive(assigned_socket):
+        binary_packet = assigned_socket.recvfrom(1024 * 2)[0]
+        return Packet.decode(binary_packet)
+
+
 class RDTUtility:
     timeout = None
     server_addr = None
@@ -25,30 +61,10 @@ class RDTUtility:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock
 
-    @staticmethod
-    def packet(seq, binary_data):
-        packet = (seq, binary_data)
-        packet_bytes = pickle.dumps(packet)
-        return packet_bytes
-
-    @staticmethod
-    def dec_packet(binary_packet):
-        packet = pickle.loads(binary_packet)
-        seq, binary_data = packet
-        return seq, binary_data
-
-    @staticmethod
-    def send_packet(addr, packet):
-        socket.sendto(packet, addr)
-
-    @staticmethod
-    def receive_packet(socket):
-        return socket.recvfrom(1024 * 2)[0]
-
     @classmethod
     def send_ack(cls, addr, seq):
-        ack_packet = cls.packet(seq, "ACK".encode())
-        cls.client_socket.sendto(ack_packet, addr)
+        ack_packet = Packet(seq, "ACK".encode())
+        ack_packet.send(cls.server_socket, addr)
 
     @classmethod
     def is_expected_seq(cls, seq):
@@ -57,20 +73,20 @@ class RDTUtility:
     # Userspace methods
     @classmethod
     def rdt_send(cls, data):
-        packet = cls.packet(cls.sequence_number, data)
+        packet = Packet(cls.sequence_number, data)
         while True:
-            print("RDT: Sending the packet with SEQ=", cls.sequence_number, "...")
-            cls.client_socket.sendto(packet, cls.server_addr)
+            print("RDT: Sending the packet with SEQ=", packet.seq, "...")
+            packet.send(cls.client_socket, cls.server_addr)
             try:
                 cls.client_socket.settimeout(cls.timeout)
-                ack_packet = cls.receive_packet(cls.client_socket)
-                seq, data = cls.dec_packet(ack_packet)
-                if cls.is_expected_seq(seq) and data.decode() == "ACK":
+                ack_packet = Packet.receive(cls.client_socket)
+                if cls.is_expected_seq(ack_packet.seq) and ack_packet.binary_data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, goes on sending another one...")
                     cls.sequence_number += 1
                     break
                 else:
-                    print("RDT: Incorrect ACK SEQ received,", seq, ", sending another one...")
+                    print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", sending another one...")
+                    print("RDT: ", ack_packet)
                     continue
             except TimeoutError:
                 print("RDT: Timeout occurred, resending the packet...")
@@ -82,17 +98,18 @@ class RDTUtility:
             print("RDT: Receiving the packet with SEQ=", cls.sequence_number, "...")
             try:
                 cls.server_socket.settimeout(cls.timeout)
-                packet = cls.receive_packet(cls.server_socket)
-                seq, data = cls.dec_packet(packet)
-                if cls.is_expected_seq(seq):
-                    print("RDT: Correct SEQ received,", seq, ", saving...")
+                packet = Packet.receive(cls.server_socket)
+                if cls.is_expected_seq(packet.seq):
+                    print("RDT: Correct SEQ received,", packet.seq, ", saving...")
                     cls.sequence_number += 1
-                    print("RDT: Sending ACK with SEQ=", seq, ", to the client...")
+                    print("RDT: Sending ACK with SEQ=", packet.seq, ", to the client...")
+                    print("RDT: ", packet)
                     cls.send_ack(cls.client_addr, cls.sequence_number - 1)
-                    return data
+                    return packet.binary_data
                 else:
-                    print("RDT: Incorrect SEQ received,", seq, ", resending the last ack...")
+                    print("RDT: Incorrect SEQ received,", packet.seq, ", resending the last ack...")
                     cls.send_ack(cls.client_addr, cls.sequence_number - 1)
+                    break
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
