@@ -101,7 +101,6 @@ class RDTUtility:
                     print("RDT: Correct SEQ received,", packet.seq, ", saving...")
                     cls.sequence_number += 1
                     print("RDT: Sending ACK with SEQ=", packet.seq, ", to the client...")
-                    print("RDT: ", packet)
                     cls.send_ack(cls.client_addr, cls.sequence_number - 1)
                     return packet.binary_data
                 else:
