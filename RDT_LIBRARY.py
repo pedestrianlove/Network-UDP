@@ -1,60 +1,73 @@
 import socket
 import pickle
-import cv2
-import matplotlib.pyplot as plt
+
 
 class RDTUtility:
-    def __init__(self, server_addr, client_addr):
-        self.server_addr = server_addr
-        self.client_addr = client_addr
-        self.server_socket = self.create_socket()
-        self.client_socket = self.create_socket()
-        self.sequence_number = 0
-        self.timeout = 5  # Set timeout value in seconds
+    timeout = None
+    server_addr = None
+    server_socket = None
+    client_addr = None
+    sequence_number = None
+    client_socket = None
 
+    @classmethod
+    def __init__(cls, server_addr, client_addr):
+        cls.server_addr = server_addr
+        cls.client_addr = client_addr
+        cls.server_socket = cls.create_socket()
+        cls.client_socket = cls.create_socket()
+        cls.sequence_number = 0
+        cls.timeout = 5  # Set timeout value in seconds
 
-    # Utility method
-    def create_socket(self):
+    @staticmethod
+    def create_socket():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return sock
 
-    def packet(self, seq, binary_data):
+    @staticmethod
+    def packet(seq, binary_data):
         packet = (seq, binary_data)
         packet_bytes = pickle.dumps(packet)
         return packet_bytes
 
-    def dec_packet(self, binary_packet):
+    @staticmethod
+    def dec_packet(binary_packet):
         packet = pickle.loads(binary_packet)
         seq, binary_data = packet
         return seq, binary_data
 
-    def send_packet(self, addr, packet):
+    @staticmethod
+    def send_packet(addr, packet):
         socket.sendto(packet, addr)
 
-    def receive_packet(self, socket):
+    @staticmethod
+    def receive_packet(socket):
         return socket.recvfrom(1024 * 2)[0]
 
-    def send_ack(self, addr, seq):
-        ack_packet = self.packet(seq, "ACK".encode())
-        self.client_socket.sendto(ack_packet, addr)
+    @classmethod
+    def send_ack(cls, addr, seq):
+        ack_packet = cls.packet(seq, "ACK".encode())
+        cls.client_socket.sendto(ack_packet, addr)
 
-    def is_expected_seq(self, seq):
-        return seq == self.sequence_number
+    @classmethod
+    def is_expected_seq(cls, seq):
+        return seq == cls.sequence_number
 
     # Userspace methods
-    def rdt_send(self, data):
-        packet = self.packet(self.sequence_number, data)
-        while (True):
-            print("RDT: Sending the packet with SEQ=", self.sequence_number, "...")
-            self.client_socket.sendto(packet, self.server_addr)
+    @classmethod
+    def rdt_send(cls, data):
+        packet = cls.packet(cls.sequence_number, data)
+        while True:
+            print("RDT: Sending the packet with SEQ=", cls.sequence_number, "...")
+            cls.client_socket.sendto(packet, cls.server_addr)
             try:
-                self.client_socket.settimeout(self.timeout)
-                ack_packet = self.receive_packet(self.client_socket)
-                seq, data = self.dec_packet(ack_packet)
-                if (self.is_expected_seq(seq) and data.decode() == "ACK"):
+                cls.client_socket.settimeout(cls.timeout)
+                ack_packet = cls.receive_packet(cls.client_socket)
+                seq, data = cls.dec_packet(ack_packet)
+                if cls.is_expected_seq(seq) and data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, goes on sending another one...")
-                    self.sequence_number += 1
+                    cls.sequence_number += 1
                     break
                 else:
                     print("RDT: Incorrect ACK SEQ received,", seq, ", sending another one...")
@@ -63,36 +76,37 @@ class RDTUtility:
                 print("RDT: Timeout occurred, resending the packet...")
                 continue
 
-    def rdt_receive(self):
-        while (True):
-            print("RDT: Receiving the packet with SEQ=", self.sequence_number, "...")
+    @classmethod
+    def rdt_receive(cls):
+        while True:
+            print("RDT: Receiving the packet with SEQ=", cls.sequence_number, "...")
             try:
-                self.server_socket.settimeout(self.timeout)
-                packet = self.receive_packet(self.server_socket)
-                seq, data = self.dec_packet(packet)
-                if (self.is_expected_seq(seq)):
+                cls.server_socket.settimeout(cls.timeout)
+                packet = cls.receive_packet(cls.server_socket)
+                seq, data = cls.dec_packet(packet)
+                if cls.is_expected_seq(seq):
                     print("RDT: Correct SEQ received,", seq, ", saving...")
-                    self.sequence_number += 1
+                    cls.sequence_number += 1
                     print("RDT: Sending ACK with SEQ=", seq, ", to the client...")
-                    self.send_ack(self.client_addr, self.sequence_number-1)
+                    cls.send_ack(cls.client_addr, cls.sequence_number - 1)
                     return data
                 else:
                     print("RDT: Incorrect SEQ received,", seq, ", resending the last ack...")
-                    break
-                    self.send_ack(self.client_addr, sequence_number - 1)
+                    cls.send_ack(cls.client_addr, cls.sequence_number - 1)
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
 
-    def start_server(self):
+    @classmethod
+    def start_server(cls):
         print("Server: Server starting...")
-        self.server_socket.bind(self.server_addr)
-        print("Server: Listening at: ", str(self.server_addr))
+        cls.server_socket.bind(cls.server_addr)
+        print("Server: Listening at: ", str(cls.server_addr))
         print("Server: Waiting for data...")
 
         outputFile = open('received.jpg', 'wb')
         while True:
-            data = self.rdt_receive()
+            data = cls.rdt_receive()
             try:
                 if data.decode() == "stop":
                     break
@@ -103,30 +117,24 @@ class RDTUtility:
         outputFile.close()
 
         print("Server: Server stopped.")
-        self.server_socket.close()
+        cls.server_socket.close()
 
-    def start_client(self):
-        print("Client: Client starting at...", str(self.client_addr))
-        self.client_socket.bind(self.client_addr)
-        print("Client: Sending the following image:")
-        self.renderImage("test.jpg")
+    @classmethod
+    def start_client(cls):
+        print("Client: Client starting at...", str(cls.client_addr))
+        cls.client_socket.bind(cls.client_addr)
+        print("Client: Sending the following image: test.jpg")
 
         testFile = open('test.jpg', 'rb')
         buf = testFile.read(1024)
         while buf:
-            print("Client: Sending packet with SEQ...", self.sequence_number)
-            self.rdt_send(buf)
+            print("Client: Sending packet with SEQ...", cls.sequence_number)
+            cls.rdt_send(buf)
             buf = testFile.read(1024)
 
         print("Client: File sent.")
         print("Client: Sending stop signal...")
-        self.rdt_send("stop".encode())
+        cls.rdt_send("stop".encode())
 
         testFile.close()
         print("Client stopped.")
-
-    def renderImage(self, imagePath):
-        imageObject = cv2.imread(imagePath, -1)
-        plt.imshow(imageObject)
-        plt.axis("off")
-        plt.show()
