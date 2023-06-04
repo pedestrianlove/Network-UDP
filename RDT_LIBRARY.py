@@ -43,16 +43,16 @@ class RDTUtility:
     def is_expected_seq(cls, seq):
         return seq == cls.sequence_number
 
-    async def receive_ack(self):
-        checked_ptr = self.base_ptr
-        while checked_ptr < self.base_ptr + self.window_size:
+    async def receive_ack(self, list_length):
+        print("RDT: Start listening for ACK packets...")
+        while self.base_ptr < self.base_ptr + self.window_size and self.base_ptr < list_length:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = Packet.receive(self.client_socket)
                 if self.is_expected_seq(ack_packet.seq) and ack_packet.binary_data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, shifting the window...")
                     self.sequence_number += 1
-                    checked_ptr += 1
+                    self.base_ptr += 1
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", sending another one...")
                     print("RDT: ", ack_packet)
@@ -72,9 +72,8 @@ class RDTUtility:
         self.failed = True
 
         # Start listening for ACK packets
-        print("RDT: Start listening for ACK packets...")
         event_loop = asyncio.get_event_loop()
-        ack_result = event_loop.create_task(self.receive_ack())
+        ack_result = event_loop.create_task(self.receive_ack(list_length))
 
         while self.base_ptr < list_length:
             # Send packets on request
