@@ -125,18 +125,22 @@ class RDTUtility:
         print("Server: Waiting for data...")
 
         outputFile = open('received.jpg', 'wb')
+        totalPackets = cls.rdt_receive()
+        pbar = tqdm(total=totalPackets)
         while True:
             data = cls.rdt_receive()
             try:
                 if data.decode() == "stop":
                     break
                 outputFile.write(data)
+                pbar.update(1)
             except UnicodeDecodeError:
                 pass
             except AttributeError:
                 print(data)
         print("Server: File closed.")
         outputFile.close()
+        pbar.close()
 
         print("Server: Server stopped.")
         cls.server_socket.close()
@@ -156,15 +160,16 @@ class RDTUtility:
             buf = testFile.read(1024)
 
         # Create packets in packets_list
-        counter = 0
+        counter = 1
         packets_list = []
         print("Creating packets...")
         for data in tqdm(data_list):
             packets_list.append(Packet(counter, data))
             counter += 1
 
-        # Attach stop signal
+        # Attach stop signal and data length
         packets_list.append(Packet(counter, "stop".encode()))
+        packets_list = [Packet(0, len(packets_list))] + packets_list
 
         # Send the buffered packets
         self.rdt_send(packets_list)
