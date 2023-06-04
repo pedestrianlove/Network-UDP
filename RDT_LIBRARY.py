@@ -66,7 +66,7 @@ class RDTUtility:
         return True
 
     # Userspace methods
-    async def rdt_send(self, packets_list):
+    def rdt_send(self, packets_list):
         list_length = len(packets_list)
         self.base_ptr = 0
         self.failed = True
@@ -133,7 +133,7 @@ class RDTUtility:
         print("Server: Server stopped.")
         cls.server_socket.close()
 
-    def start_client(self):
+    async def start_client(self):
         print("Client: Client starting at...", str(self.client_addr))
         self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image: test.jpg")
@@ -150,7 +150,7 @@ class RDTUtility:
             buf = testFile.read(1024)
 
         # Send the buffered packets
-        asyncio.run(self.rdt_send(packets_list))
+        self.rdt_send(packets_list)
 
         print("Client: File sent.")
         print("Client: Sending stop signal...")
