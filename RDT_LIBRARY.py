@@ -1,5 +1,6 @@
 import socket
 import threading
+from tqdm import tqdm
 
 from Packet import Packet
 
@@ -72,7 +73,6 @@ class RDTUtility:
     # Userspace methods
     def rdt_send(self, packets_list):
         list_length = len(packets_list)
-        print("Sending the packets with length of ", list_length, "...")
         self.base_ptr = 0
         self.failed = True
 
@@ -144,15 +144,20 @@ class RDTUtility:
         print("Client: Sending the following image: test.jpg")
 
         # Read the binary data from file and buffer into packets list
-        packets_list = []
-        counter = 0
         testFile = open('test.jpg', 'rb')
+        data_list = []
         buf = testFile.read(1024)
+        print("Client: Buffering packet with SEQ...")
         while buf:
-            print("Client: Buffering packet with SEQ...", counter)
-            packets_list.append(Packet(counter, buf))
-            counter += 1
+            data_list.append(buf)
             buf = testFile.read(1024)
+
+        counter = 0
+        packets_list = []
+        # Create packets in packets_list
+        for data in tqdm(data_list):
+            packets_list.append(Packet(counter, data))
+            counter += 1
 
         # Attach stop signal
         packets_list.append(Packet(counter, "stop".encode()))
