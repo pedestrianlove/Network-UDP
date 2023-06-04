@@ -92,8 +92,6 @@ class RDTUtility:
                 for i in range(local_base_ptr, local_base_ptr + self.window_size):
                     if i >= list_length:
                         break
-                    if packets_list[i].binary_data is None:
-                        print("None data found.")
                     packets_list[i].send(self.client_socket, self.server_addr)
 
         # Wait for the ACK thread to finish
@@ -106,7 +104,7 @@ class RDTUtility:
             try:
                 cls.server_socket.settimeout(cls.timeout)
                 packet = Packet.receive(cls.server_socket)
-                if cls.is_expected_seq(packet.seq):
+                if cls.is_expected_seq(packet.seq) and packet.binary_data is not None:
                     print("RDT: Correct SEQ received,", packet.seq, ", saving...")
                     cls.sequence_number += 1
                     print("RDT: Sending ACK with SEQ=", packet.seq, ", to the client...")
