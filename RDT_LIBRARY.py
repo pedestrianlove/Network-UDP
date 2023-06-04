@@ -57,6 +57,7 @@ class RDTUtility:
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", sending another one...")
                     print("RDT: ", ack_packet)
+                    break
 
                 # Set flags to resend the window
                 self.failed = True
