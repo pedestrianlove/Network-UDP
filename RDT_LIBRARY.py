@@ -136,6 +136,7 @@ class RDTUtility:
                 pass
             except AttributeError:
                 print(data)
+                break
         print("Server: File closed.")
         outputFile.close()
 
