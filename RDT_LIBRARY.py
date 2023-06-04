@@ -134,6 +134,7 @@ class RDTUtility:
                 if data.decode() == "stop":
                     print("Server: Stop signal received.")
                     break
+                print("Writing to file...")
                 outputFile.write(data)
             except UnicodeDecodeError:
                 pass
