@@ -64,7 +64,7 @@ class RDTUtility:
                 print("RDT: Timeout occurred, resending the window...")
                 self.failed = True
                 continue
-        return True
+        return
 
     # Userspace methods
     def rdt_send(self, packets_list):
@@ -72,8 +72,12 @@ class RDTUtility:
         self.base_ptr = 0
         self.failed = True
 
+        # Start listening for ACK packets
+        ack_thread = threading.Thread(target=self.receive_ack, args=(list_len,))
+        ack_thread.start()
+
+        # Send packets in the window on request
         while self.base_ptr < list_length:
-            # Send packets on request
             if self.failed:
                 self.failed = False
                 # Get current window
@@ -83,6 +87,9 @@ class RDTUtility:
                     if i >= list_length:
                         break
                     packets_list[i].send(self.client_socket, self.client_addr)
+
+        # Wait for the ACK thread to finish
+        ack_thread.join()
 
     @classmethod
     def rdt_receive(cls):
@@ -148,10 +155,7 @@ class RDTUtility:
         list_len = len(packets_list)
 
         # Send the buffered packets
-        ack_thread = threading.Thread(target=self.receive_ack, args=(list_len,))
-        ack_thread.start()
         self.rdt_send(packets_list)
-        ack_thread.join()
 
         print("Client: File sent.")
         testFile.close()
