@@ -145,9 +145,10 @@ class RDTUtility:
 
         # Attach stop signal
         packets_list.append(Packet(counter, "stop".encode()))
+        list_len = len(packets_list)
 
         # Send the buffered packets
-        ack_thread = threading.Thread(target=self.receive_ack, args=(self, len(packets_list),))
+        ack_thread = threading.Thread(target=self.receive_ack, args=(self, list_len,))
         ack_thread.start()
         self.rdt_send(packets_list)
         ack_thread.join()
