@@ -131,13 +131,12 @@ class RDTUtility:
             data = cls.rdt_receive()
             try:
                 if data.decode() == "stop":
+                    print("Server: Stop signal received.")
                     break
                 outputFile.write(data)
                 pbar.update(1)
             except UnicodeDecodeError:
                 pass
-            except AttributeError:
-                print(data)
         print("Server: File closed.")
         outputFile.close()
         pbar.close()
