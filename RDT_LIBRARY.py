@@ -82,7 +82,7 @@ class RDTUtility:
         ack_thread.start()
 
         # Send packets in the window on request
-        while self.base_ptr < list_length:
+        while self.base_ptr < list_length-1:
             if self.failed:
                 self.failed = False
                 # Get current window
