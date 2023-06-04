@@ -147,7 +147,7 @@ class RDTUtility:
         packets_list.append(Packet(counter, "stop".encode()))
 
         # Send the buffered packets
-        ack_thread = threading.Thread(target=self.receive_ack, args=(len(packets_list),))
+        ack_thread = threading.Thread(target=self.receive_ack, args=(self, len(packets_list),))
         ack_thread.start()
         self.rdt_send(packets_list)
         ack_thread.join()
