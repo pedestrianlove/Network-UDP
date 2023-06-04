@@ -83,7 +83,6 @@ class RDTUtility:
 
         # Send packets in the window on request
         while self.base_ptr < list_length-1:
-            print("Checking...")
             if self.failed:
                 self.failed = False
                 # Get current window
