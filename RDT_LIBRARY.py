@@ -126,7 +126,7 @@ class RDTUtility:
 
         outputFile = open('received.jpg', 'wb')
         totalPackets = cls.rdt_receive()
-        pbar = tqdm(total=totalPackets)
+        pbar = tqdm(total=totalPackets, position=0, leave=True)
         while True:
             data = cls.rdt_receive()
             try:
