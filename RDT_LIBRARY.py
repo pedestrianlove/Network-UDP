@@ -137,6 +137,8 @@ class RDTUtility:
                 print("Server: Writing to file...")
                 outputFile.write(data)
             except UnicodeDecodeError:
+                print("Server: Writing to file...")
+                outputFile.write(data)
                 pass
             except AttributeError:
                 print(data)
