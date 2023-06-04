@@ -52,11 +52,10 @@ class RDTUtility:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = Packet.receive(self.client_socket)
-                if self.is_expected_seq(ack_packet.seq) and ack_packet.binary_data.decode() == "ACK":
+                if ack_packet.binary_data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, shifting the window...")
-                    self.sequence_number += 1
-                    self.base_ptr += 1
-                    self.sequence_number += 1
+                    self.sequence_number = ack_packet.seq
+                    self.base_ptr = ack_packet.seq
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", resending the window...")
                     time.sleep(1)
@@ -149,14 +148,14 @@ class RDTUtility:
         testFile = open('test.jpg', 'rb')
         data_list = []
         buf = testFile.read(1024)
-        print("Client: Buffering packet with SEQ...")
+        print("Client: Buffering data...")
         while buf:
             data_list.append(buf)
             buf = testFile.read(1024)
 
+        # Create packets in packets_list
         counter = 0
         packets_list = []
-        # Create packets in packets_list
         print("Creating packets...")
         for data in tqdm(data_list):
             packets_list.append(Packet(counter, data))
