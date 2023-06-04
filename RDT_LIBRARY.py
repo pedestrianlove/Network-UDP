@@ -133,6 +133,8 @@ class RDTUtility:
                 outputFile.write(data)
             except UnicodeDecodeError:
                 pass
+            except AttributeError:
+                print(data)
         print("Server: File closed.")
         outputFile.close()
 
