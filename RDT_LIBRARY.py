@@ -72,6 +72,7 @@ class RDTUtility:
         self.failed = True
 
         # Start listening for ACK packets
+        print("RDT: Start listening for ACK packets...")
         event_loop = asyncio.get_event_loop()
         ack_result = event_loop.create_task(self.receive_ack())
 
