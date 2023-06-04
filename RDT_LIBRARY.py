@@ -1,4 +1,3 @@
-import asyncio
 import socket
 import threading
 
@@ -149,6 +148,7 @@ class RDTUtility:
 
         # Send the buffered packets
         ack_thread = threading.Thread(target=self.receive_ack, args=(len(packets_list),))
+        ack_thread.start()
         self.rdt_send(packets_list)
         ack_thread.join()
 
