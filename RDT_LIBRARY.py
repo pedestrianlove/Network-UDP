@@ -87,8 +87,7 @@ class RDTUtility:
                 self.failed = False
                 # Get current window
                 local_base_ptr = self.base_ptr
-                print("RDT: Sending the packets with SEQ=", local_base_ptr, ", to ", local_base_ptr + self.window_size,
-                      "...")
+                print("RDT: Sending the packets with SEQ=", local_base_ptr, ", to ", min(local_base_ptr + self.window_size, list_length-1), "...")
                 for i in range(local_base_ptr, local_base_ptr + self.window_size):
                     if i >= list_length:
                         break
