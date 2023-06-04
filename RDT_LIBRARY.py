@@ -72,6 +72,7 @@ class RDTUtility:
     # Userspace methods
     def rdt_send(self, packets_list):
         list_length = len(packets_list)
+        print("Sending the packets with length of ", list_length, "...")
         self.base_ptr = 0
         self.failed = True
 
