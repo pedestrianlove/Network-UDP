@@ -1,5 +1,7 @@
 import socket
 import threading
+import time
+
 from tqdm import tqdm
 
 from Packet import Packet
@@ -56,8 +58,8 @@ class RDTUtility:
                     self.base_ptr += 1
                     self.sequence_number += 1
                 else:
-                    print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", sending another one...")
-                    print("RDT: ", ack_packet)
+                    print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", resending the window...")
+                    time.sleep(1)
                     break
 
                 # Set flags to resend the window
