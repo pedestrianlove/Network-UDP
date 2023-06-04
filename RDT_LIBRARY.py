@@ -52,7 +52,7 @@ class RDTUtility:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = Packet.receive(self.client_socket)
-                if ack_packet.binary_data.decode() == "ACK":
+                if ack_packet.seq > self.sequence_number and ack_packet.binary_data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, shifting the window...")
                     self.sequence_number = ack_packet.seq
                     self.base_ptr = ack_packet.seq
