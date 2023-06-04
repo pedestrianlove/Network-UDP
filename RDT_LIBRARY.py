@@ -92,6 +92,8 @@ class RDTUtility:
                 for i in range(local_base_ptr, local_base_ptr + self.window_size):
                     if i >= list_length:
                         break
+                    if packets_list[i].binary_data is None:
+                        print("None data found.")
                     packets_list[i].send(self.client_socket, self.server_addr)
 
         # Wait for the ACK thread to finish
@@ -163,9 +165,6 @@ class RDTUtility:
         packets_list = []
         print("Creating packets...")
         for data in tqdm(data_list):
-            if data is None:
-                print("None data type found.")
-                break
             packets_list.append(Packet(counter, data))
             counter += 1
 
