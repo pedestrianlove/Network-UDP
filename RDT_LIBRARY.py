@@ -45,7 +45,7 @@ class RDTUtility:
 
     async def receive_ack(self, list_length):
         print("RDT: Start listening for ACK packets...")
-        while self.base_ptr < self.base_ptr + self.window_size and self.base_ptr < list_length:
+        while self.base_ptr < list_length:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = Packet.receive(self.client_socket)
@@ -66,7 +66,7 @@ class RDTUtility:
         return True
 
     # Userspace methods
-    def rdt_send(self, packets_list):
+    async def rdt_send(self, packets_list):
         list_length = len(packets_list)
         self.base_ptr = 0
         self.failed = True
@@ -150,7 +150,7 @@ class RDTUtility:
             buf = testFile.read(1024)
 
         # Send the buffered packets
-        self.rdt_send(packets_list)
+        asyncio.run(self.rdt_send(packets_list))
 
         print("Client: File sent.")
         print("Client: Sending stop signal...")
