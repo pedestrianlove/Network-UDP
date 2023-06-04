@@ -73,7 +73,7 @@ class RDTUtility:
         self.failed = True
 
         # Start listening for ACK packets
-        ack_thread = threading.Thread(target=self.receive_ack, args=(list_len,))
+        ack_thread = threading.Thread(target=self.receive_ack, args=(list_length,))
         ack_thread.start()
 
         # Send packets in the window on request
@@ -152,7 +152,6 @@ class RDTUtility:
 
         # Attach stop signal
         packets_list.append(Packet(counter, "stop".encode()))
-        list_len = len(packets_list)
 
         # Send the buffered packets
         self.rdt_send(packets_list)
