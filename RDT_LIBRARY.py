@@ -155,6 +155,7 @@ class RDTUtility:
         counter = 0
         packets_list = []
         # Create packets in packets_list
+        print("Creating packets...")
         for data in tqdm(data_list):
             packets_list.append(Packet(counter, data))
             counter += 1
