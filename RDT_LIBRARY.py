@@ -146,6 +146,10 @@ class RDTUtility:
         print("Server: File closed.")
         outputFile.close()
 
+        # Resending ack to make sure the client is stopped
+        print("Server: Stopping the client...")
+        cls.send_ack(cls.client_addr, cls.sequence_number - 1)
+
         print("Server: Server stopped.")
         cls.server_socket.close()
 
