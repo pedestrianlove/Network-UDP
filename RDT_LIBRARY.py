@@ -64,6 +64,8 @@ class RDTUtility:
                 print("RDT: Timeout occurred, resending the window...")
                 self.failed = True
                 continue
+            except UnicodeDecodeError:
+                pass
         return
 
     # Userspace methods
@@ -127,7 +129,7 @@ class RDTUtility:
                     break
                 outputFile.write(data)
             except UnicodeDecodeError:
-                outputFile.write(data)
+                pass
         print("Server: File closed.")
         outputFile.close()
 
