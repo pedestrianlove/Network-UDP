@@ -1,5 +1,6 @@
 import asyncio
 import socket
+import threading
 
 from Packet import Packet
 
@@ -43,7 +44,7 @@ class RDTUtility:
     def is_expected_seq(cls, seq):
         return seq == cls.sequence_number
 
-    async def receive_ack(self, list_length):
+    def receive_ack(self, list_length):
         print("RDT: Start listening for ACK packets...")
         while self.base_ptr < list_length:
             try:
@@ -53,6 +54,7 @@ class RDTUtility:
                     print("RDT: Correct ACK SEQ received, shifting the window...")
                     self.sequence_number += 1
                     self.base_ptr += 1
+                    self.sequence_number += 1
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", sending another one...")
                     print("RDT: ", ack_packet)
@@ -71,10 +73,6 @@ class RDTUtility:
         self.base_ptr = 0
         self.failed = True
 
-        # Start listening for ACK packets
-        event_loop = asyncio.get_event_loop()
-        ack_result = event_loop.create_task(self.receive_ack(list_length))
-
         while self.base_ptr < list_length:
             # Send packets on request
             if self.failed:
@@ -86,9 +84,6 @@ class RDTUtility:
                     if i >= list_length:
                         break
                     packets_list[i].send(self.client_socket, self.client_addr)
-
-        # Pickup the result of the ACK packets listening
-        event_loop.run_until_complete(ack_result)
 
     @classmethod
     def rdt_receive(cls):
@@ -133,7 +128,7 @@ class RDTUtility:
         print("Server: Server stopped.")
         cls.server_socket.close()
 
-    async def start_client(self):
+    def start_client(self):
         print("Client: Client starting at...", str(self.client_addr))
         self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image: test.jpg")
@@ -149,12 +144,15 @@ class RDTUtility:
             counter += 1
             buf = testFile.read(1024)
 
+        # Attach stop signal
+        packets_list.append(Packet(counter, "stop".encode()))
+
         # Send the buffered packets
+        ack_thread = threading.Thread(target=self.receive_ack, args=(len(packets_list),))
         self.rdt_send(packets_list)
+        ack_thread.join()
 
         print("Client: File sent.")
-        print("Client: Sending stop signal...")
-        self.rdt_send("stop".encode())
-
         testFile.close()
+
         print("Client stopped.")
