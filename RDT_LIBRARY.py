@@ -59,6 +59,7 @@ class RDTUtility:
                     self.sequence_number += 1
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", resending the window...")
+                    print("RDT: data=", ack_packet.binary_data.decode(), ", expected=", "ACK")
                     time.sleep(1)
                     break
 
