@@ -52,7 +52,7 @@ class RDTUtility:
             try:
                 self.client_socket.settimeout(self.timeout)
                 ack_packet = Packet.receive(self.client_socket)
-                if ack_packet.seq > self.sequence_number and ack_packet.binary_data.decode() == "ACK":
+                if ack_packet.binary_data.decode() == "ACK":
                     print("RDT: Correct ACK SEQ received, shifting the window...")
                     self.sequence_number = ack_packet.seq
                     self.base_ptr = ack_packet.seq
@@ -125,8 +125,6 @@ class RDTUtility:
         print("Server: Waiting for data...")
 
         outputFile = open('received.jpg', 'wb')
-        totalPackets = cls.rdt_receive()
-        pbar = tqdm(total=totalPackets, position=0, leave=True)
         while True:
             data = cls.rdt_receive()
             try:
@@ -134,12 +132,10 @@ class RDTUtility:
                     print("Server: Stop signal received.")
                     break
                 outputFile.write(data)
-                pbar.update(1)
             except UnicodeDecodeError:
                 pass
         print("Server: File closed.")
         outputFile.close()
-        pbar.close()
 
         print("Server: Server stopped.")
         cls.server_socket.close()
@@ -159,7 +155,7 @@ class RDTUtility:
             buf = testFile.read(1024)
 
         # Create packets in packets_list
-        counter = 1
+        counter = 0
         packets_list = []
         print("Creating packets...")
         for data in tqdm(data_list):
@@ -168,7 +164,6 @@ class RDTUtility:
 
         # Attach stop signal and data length
         packets_list.append(Packet(counter, "stop".encode()))
-        packets_list = [Packet(0, len(packets_list))] + packets_list
 
         # Send the buffered packets
         self.rdt_send(packets_list)
