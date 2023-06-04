@@ -111,9 +111,12 @@ class RDTUtility:
                     cls.send_ack(cls.client_addr, cls.sequence_number - 1)
                     return packet.binary_data
                 else:
-                    print("RDT: Incorrect SEQ received,", packet.seq, ", resending the last ack...")
-                    cls.send_ack(cls.client_addr, cls.sequence_number - 1)
-                    break
+                    if packet.binary_data is None:
+                        print("RDT: Incorrect data received,", packet.seq, ", resending the last ack...")
+                        cls.send_ack(cls.client_addr, cls.sequence_number - 1)
+                    else:
+                        print("RDT: Incorrect SEQ received,", packet.seq, ", resending the last ack...")
+                        cls.send_ack(cls.client_addr, cls.sequence_number - 1)
             except TimeoutError:
                 print("RDT: Timeout occurred, waiting for the packet...")
                 continue
