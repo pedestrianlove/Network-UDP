@@ -60,6 +60,7 @@ class RDTUtility:
                 # Set flags to resend the window
                 self.failed = True
             except TimeoutError:
+                print("RDT: Timeout occurred, resending the window...")
                 self.failed = True
                 continue
         return True
