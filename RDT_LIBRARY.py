@@ -59,7 +59,6 @@ class RDTUtility:
                     self.sequence_number += 1
                 else:
                     print("RDT: Incorrect ACK SEQ received,", ack_packet.seq, ", resending the window...")
-                    print("RDT: data=", ack_packet.binary_data.decode(), ", expected=", "ACK")
                     time.sleep(1)
                     break
 
@@ -93,7 +92,7 @@ class RDTUtility:
                 for i in range(local_base_ptr, local_base_ptr + self.window_size):
                     if i >= list_length:
                         break
-                    packets_list[i].send(self.client_socket, self.client_addr)
+                    packets_list[i].send(self.client_socket, self.server_addr)
 
         # Wait for the ACK thread to finish
         ack_thread.join()
