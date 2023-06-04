@@ -65,27 +65,26 @@ class RDTUtility:
         return True
 
     # Userspace methods
-    @classmethod
-    def rdt_send(cls, packets_list):
+    def rdt_send(self, packets_list):
         list_length = len(packets_list)
-        cls.base_ptr = 0
-        cls.failed = True
+        self.base_ptr = 0
+        self.failed = True
 
         # Start listening for ACK packets
         event_loop = asyncio.get_event_loop()
-        ack_result = event_loop.create_task(cls.receive_ack())
+        ack_result = event_loop.create_task(self.receive_ack())
 
-        while cls.base_ptr < list_length:
+        while self.base_ptr < list_length:
             # Send packets on request
-            if cls.failed:
-                cls.failed = False
+            if self.failed:
+                self.failed = False
                 # Get current window
-                local_base_ptr = cls.base_ptr
-                print("RDT: Sending the packets with SEQ=", local_base_ptr, ", to ", local_base_ptr + cls.window_size, "...")
-                for i in range(local_base_ptr, local_base_ptr + cls.window_size):
+                local_base_ptr = self.base_ptr
+                print("RDT: Sending the packets with SEQ=", local_base_ptr, ", to ", local_base_ptr + self.window_size, "...")
+                for i in range(local_base_ptr, local_base_ptr + self.window_size):
                     if i >= list_length:
                         break
-                    packets_list[i].send(cls.client_socket, cls.client_addr)
+                    packets_list[i].send(self.client_socket, self.client_addr)
 
         # Pickup the result of the ACK packets listening
         event_loop.run_until_complete(ack_result)
@@ -133,10 +132,9 @@ class RDTUtility:
         print("Server: Server stopped.")
         cls.server_socket.close()
 
-    @classmethod
-    def start_client(cls):
-        print("Client: Client starting at...", str(cls.client_addr))
-        cls.client_socket.bind(cls.client_addr)
+    def start_client(self):
+        print("Client: Client starting at...", str(self.client_addr))
+        self.client_socket.bind(self.client_addr)
         print("Client: Sending the following image: test.jpg")
 
         # Read the binary data from file and buffer into packets list
@@ -151,11 +149,11 @@ class RDTUtility:
             buf = testFile.read(1024)
 
         # Send the buffered packets
-        cls.rdt_send(packets_list)
+        self.rdt_send(packets_list)
 
         print("Client: File sent.")
         print("Client: Sending stop signal...")
-        cls.rdt_send("stop".encode())
+        self.rdt_send("stop".encode())
 
         testFile.close()
         print("Client stopped.")
